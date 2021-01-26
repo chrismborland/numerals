@@ -4,6 +4,12 @@
 
 Roman Numerals is a simple Java web application, running on an embedded Jetty server, which hosts a servlet for converting single numbers & ranges of numbers (between 1-3999) to their Roman Numeral representations following the [Standard Form](https://en.wikipedia.org/wiki/Roman_numerals#2Standard_form).
 
+## Prequisites
+Buiding & running Numerals requires the following to be installed:
+- [Java 1.8](https://docs.oracle.com/javase/8/)
+- [Maven 3](https://maven.apache.org/)
+
+
 ## Usage
 Upon [building](#building) & [deploying](#deploying) the code, the application will be available at http://localhost:8080/romannumeral.
 
