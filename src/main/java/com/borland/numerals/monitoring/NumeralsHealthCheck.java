@@ -25,7 +25,7 @@ public class NumeralsHealthCheck extends HealthCheck {
             // make a GET to numeral servlet to verify status.
             httpClient = HttpClients.createMinimal();
             // ideally this would be configured elsewhere.
-            HttpGet request = new HttpGet("http://localhost:" + Integer.toString(App.PORT) + NumeralServlet.SERVLET_PATH);
+            HttpGet request = new HttpGet("http://localhost:" + Integer.toString(App.PORT) + NumeralServlet.SERVLET_PATH + "?query=1");
             CloseableHttpResponse response = httpClient.execute(request);
             if (response != null && response.getStatusLine() != null) {
                 if (HttpServletResponse.SC_OK == response.getStatusLine().getStatusCode()) {

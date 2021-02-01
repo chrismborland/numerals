@@ -12,6 +12,13 @@ public class NumeralPair implements Comparable<NumeralPair> {
     private String numeral;
 
     /**
+     * Default constructor.
+     */
+    public NumeralPair() {
+
+    }
+
+    /**
      * Public constructor.
      * 
      * @param number  Number.
@@ -32,12 +39,30 @@ public class NumeralPair implements Comparable<NumeralPair> {
     }
 
     /**
+     * Set number portion of the pair.
+     * 
+     * @param number Number
+     */
+    public void setNumber(Integer number) {
+        this.number = number;
+    }
+
+    /**
      * Get numeral portion of pair.
      * 
      * @return Numeral.
      */
     public String getNumeral() {
         return numeral;
+    }
+
+    /**
+     * Set numeral portion of the pair.
+     * 
+     * @param numeral Numeral.
+     */
+    public void setNumeral(String numeral) {
+        this.numeral = numeral;
     }
 
     @Override

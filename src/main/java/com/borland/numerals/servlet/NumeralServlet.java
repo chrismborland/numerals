@@ -13,9 +13,7 @@ import com.borland.numerals.service.NumeralPair;
 import com.borland.numerals.service.NumeralService;
 import com.borland.numerals.service.impl.StandardFormNumeralServiceImpl;
 import com.codahale.metrics.Histogram;
-import com.codahale.metrics.Meter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,23 +32,16 @@ public class NumeralServlet extends HttpServlet {
     // servlet path.
     public static final String SERVLET_PATH = "/romannumeral";
 
-    // metrics.
-    private final Histogram responseSizes = App.metrics.histogram("response-sizes");
-    private final Meter requests = App.metrics.meter("requests");
+    // metrics.s
+    private final Histogram responseSizes = App.metrics.histogram(App.METRIX_PREFIX + ".successResponseSizes");
 
     // available query string parameters.
     private static final String PARAM_QUERY = "query";
     private static final String PARAM_MIN = "min";
     private static final String PARAM_MAX = "max";
 
-    // error messages.
-    private static final String ERR_MSG_INVALID_PARAMETERS = "Invalid parameters";
-    private static final String ERR_MSG_PROCESSING_FAILED = "Processing failed";
-
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // add request to metrics.
-        requests.mark();
         // gather the query parameters.
         String query = request.getParameter(PARAM_QUERY);
         String min = request.getParameter(PARAM_MIN);
@@ -62,7 +53,7 @@ public class NumeralServlet extends HttpServlet {
             handleRange(request, response, min, max);
         } else {
             LOG.error("Unable to handle request.");
-            sendErrorResponse(response, ERR_MSG_INVALID_PARAMETERS);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
     }
 
@@ -86,7 +77,7 @@ public class NumeralServlet extends HttpServlet {
             // log the invalid request.
             LOG.error("Invalid parameter on conversion request. [query = {}]", query);
             // write error response.
-            sendErrorResponse(response, ERR_MSG_INVALID_PARAMETERS);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             // return early. do not continue processing.
             return;
         }
@@ -95,8 +86,7 @@ public class NumeralServlet extends HttpServlet {
         // verify we recieved pair.
         if (pair == null) {
             LOG.error("Error converting [{}] to numeral.  Check logs.", query);
-            // no pairs found.  send processing failure message.
-            sendErrorResponse(response, ERR_MSG_PROCESSING_FAILED);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             // return early.  do not continue processing.
             return;
         }
@@ -125,9 +115,7 @@ public class NumeralServlet extends HttpServlet {
         if (!numeralService.isRangeEligible(minNum, maxNum)) {
             // log the invalid request.
             LOG.error("Invalid parameter on conversion request. [min = {}, max = {}]", min, max);
-            // write error response.
-            sendErrorResponse(response, ERR_MSG_INVALID_PARAMETERS);
-            // return early. do not continue processing.
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
         // perform the actual conversion.
@@ -135,28 +123,12 @@ public class NumeralServlet extends HttpServlet {
         // verify we recieved pairs.
         if (pairs == null || pairs.isEmpty()) {
             LOG.error("Error converting range [min = {}, max = {}] to numerals.  Check logs.", min, max);
-            // no pairs found.  send processing failure message.
-            sendErrorResponse(response, ERR_MSG_PROCESSING_FAILED);
-            // return early.  do not continue processing.
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
         }
         // write the converted pair to the response.
         ObjectMapper mapper = new ObjectMapper();
         sendResponse(response, mapper.writeValueAsString(pairs));
-    }
-
-    /**
-     * Sends error response JSON. This method still returns a 200 as the
-     * user is expected to parse appropriately.
-     * 
-     * @param response Response
-     * @throws IOException
-     */
-    private void sendErrorResponse(HttpServletResponse response, String errorMessage) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode error = mapper.createObjectNode();
-        error.put("Error", errorMessage);
-        sendResponse(response, mapper.writeValueAsString(error));
     }
 
     /**

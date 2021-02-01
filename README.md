@@ -79,6 +79,8 @@ Response:
 ]
 ```
 
+#### Error Handling
+Errors will be handled with the appropriate response status (i.e. <code>400</code> for bad requests, <code>405</code> for unsupported methods, <code>500</code> for internal errors).
 
 ## Strategy
 
@@ -195,9 +197,15 @@ Numerals uses an embedded Jetty server to host & deliver servlet functionality. 
 
 <code>NumeralsHealthCheck</code> provides a health check which probes the <code>NumeralServlet</code> checking for 200 status code.  This health check is registered in the <code>HealthCheckContextLister</code>, which is in turned registered as a <code>ServletContextListener</code> in <code>App</code>.
 
+**Metrics**
+
+<code>MetricsInstrumetedFilterContextListener</code> provides our <code>MetricsRegistry</code> instance to the <code>InstrumentedFilterContextListener</code> which is registered as a <code>ServletContextListener</code> along with an <code>InstrumentedFilter</code> in <code>App</code> . This filter provides all of the request & response [metrics](#Metrics) documented below.
+
+Additional metrics are captured inline in <code>NumeralServlet</code> & <code>StandardFormNumeralServiceImpl</code>.
+
 **Unit Tests**
 
-<code>NumeralServiceTest</code> contains all of the unit tests providing coverage for the <code>NumeralService</code> (specifically <code>StandardFormNumeralServiceImpl</code>).
+All of the unit tests reside in the project under the <code>/src/test</code>.  See the [code coverage](#Code-Coverage) section for the latest coverage statistics.
 
 
 ### Building
@@ -216,9 +224,20 @@ Start the application with the following command:
 
 
 ### Testing
-Unit testing is performed using JUnit 4 and is integrated into the build process.  Unit tests can be explicitly run using the following command:
+Unit testing is performed using [JUnit 4](https://junit.org/junit4/) & [Mockito](https://site.mockito.org/) and is integrated into the build process.  Unit tests can be explicitly run using the following command:
 
 <code>mvn clean test</code>
+
+### Code Coverage
+Code coverage is calculated using [JaCoCo](https://www.eclemma.org/jacoco/).  A code coverage report can be generated using the following command:
+
+<code>mvn clean verify</code>
+
+The code coverage report can be found at <code>/target/site/jacoco/index.html</code> after successfully running the tool.
+
+**Current Code Coverage Statistics**
+
+![code coverage report](doc/code-coverage-report.png)
 
 ## Dev Ops
 
@@ -230,38 +249,36 @@ Logging is achieved using a basic console appender from [Log4j](https://logging.
 *NOTE: SLF4J Maven dependency would need to be changed to appropriate framework.*
 
 ### Metrics
-The following metrics are captured via [Metrics](https://metrics.dropwizard.io/) and surfaced to JMX:
-
-- Response size histogram
-- Request meter
-- Single conversion timer
-- Range conversion timer
-
-These metrics can be easily viewed using [JConsole](https://docs.oracle.com/javase/8/docs/technotes/guides/management/jconsole.html) under "metrics".
-
-*NOTE: You must make a request to the numeral endpoint before metrics will appear.*
+Metrics are captured via [Metrics](https://metrics.dropwizard.io/) and surfaced to JMX.  These metrics can be easily viewed using [JConsole](https://docs.oracle.com/javase/8/docs/technotes/guides/management/jconsole.html) under "metrics".
 
 ![launch jconsole](doc/launch-jconsole.png)
 
-**Response Size Histogram**
+*NOTE: You must make a request to the numeral endpoint before some metrics will appear.*
 
-Shows metrics on the number & size of responses.
-![response size histogram](doc/response-size-histogram.png)
+The following metrics are captured by the application:
 
-**Request Meter**
+- Counters
+  - **numerals.activeRequests* - Number of active requests
+- Histogram
+  - *numerals.successResponseSizes* - Number & size of succesful responses.
+- Meters
+  - **numerals.errors* - The rate of unhandled errors.
+  - **numerals.responseCodes.badRequests* - Rate of bad request (<code>400</code>) responses returned.
+  - **numerals.responseCodes.created* - Rate of created (<code>201</code>) responses returned.
+  - **numerals.responseCodes.noContent* - Rate of no content (<code>204</code>) responses returned.
+  - **numerals.responseCodes.notFound* - Rate of not found (<code>404</code>) responses returned.
+  - **numerals.responseCodes.ok* - Rate of ok (<code>200</code>) responses returned.
+  - **numerals.responseCodes.other* - Rate of other reponses not specifically captured.
+  - **numerals.responseCodes.serverError* - Rate of server error (<code>500</code>) responses returned.
+  - **numerals.timeouts* - Rate of timed out requests.
+- Timers
+  - *numerals.rangeConversions* - Time to perform & frequency of range conversions.
+  - **numerals.requests* - Time to handle request & request frequency.
+  - *numerals.singleConversions* - Time to perform & frequency of single conversions.
 
-Shows metrics on the rate & number of requests over time.
-![request meter](doc/request-meter.png)
+Metrics are captured both inline programmatically and via an <code>[InstrumentedFilter](https://www.javadoc.io/doc/io.dropwizard.metrics/metrics-servlet/4.1.17/com/codahale/metrics/servlet/InstrumentedFilter.html)</code> with the latter being denoted above (*).
 
-**Range Conversion Timer**
-
-Shows metrics on the amount of time it takes to perform range conversions.
-![range conversion timer](doc/range-conversion-timer.png)
-
-**Single Conversion Timer**
-
-Shows metrics on the amount of time it takes to perform a single conversion.
-![single conversion timer](doc/single-conversion-timer.png)
+![jmx metrics console](doc/jmx-metrics-console.png)
 
 ### Monitoring
 The system status can be monitored via a Health Check endpoint (`/healthcheck`) provided by [Metrics](https://metrics.dropwizard.io/), which returns a status for all available health checks in the system.
@@ -300,4 +317,6 @@ The following resources were used and/or consulted in the creation of this appli
 - [SLF4J](http://www.slf4j.org/)
 - [Log4j](https://logging.apache.org/log4j)
 - [JUnit 4](https://junit.org/junit4/)
+- [Mockito](https://site.mockito.org/)
+- [JaCoCo](https://www.eclemma.org/jacoco/)
 - [Wikipedia](https://en.wikipedia.org/wiki/Roman_numerals)
