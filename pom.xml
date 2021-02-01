@@ -23,6 +23,12 @@
       <artifactId>junit</artifactId>
       <version>4.13.1</version>
     </dependency>
+    <!-- mockito -->
+    <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>3.7.7</version>
+    </dependency>
     <!-- logging -->
     <dependency>
         <groupId>org.slf4j</groupId>
@@ -62,6 +68,11 @@
       <artifactId>metrics-servlets</artifactId>
       <version>4.1.17</version>
     </dependency>
+    <dependency>
+      <groupId>io.dropwizard.metrics</groupId>
+      <artifactId>metrics-servlet</artifactId>
+      <version>4.1.17</version>
+    </dependency>
     <!-- json -->
     <dependency> 
       <groupId>com.fasterxml.jackson.core</groupId> 
@@ -78,6 +89,7 @@
 
   <build>
     <plugins>
+      <!-- assembly plugin -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
@@ -96,6 +108,26 @@
             <phase>package</phase>
             <goals>
               <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- code coverage plugin -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.6</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>report</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>report</goal>
             </goals>
           </execution>
         </executions>

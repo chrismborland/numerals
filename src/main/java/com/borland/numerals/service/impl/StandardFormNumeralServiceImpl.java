@@ -29,8 +29,8 @@ public class StandardFormNumeralServiceImpl implements NumeralService {
     public static final Logger LOG = LoggerFactory.getLogger(StandardFormNumeralServiceImpl.class);
 
     // metrics
-    private final Timer singleResponses = App.metrics.timer("single-conversions");
-    private final Timer multipleResponses = App.metrics.timer("range-conversions");
+    private final Timer singleResponses = App.metrics.timer(App.METRIX_PREFIX + ".singleConversions");
+    private final Timer multipleResponses = App.metrics.timer(App.METRIX_PREFIX + ".rangeConversions");
 
     // thread pool size for handling range requests.
     private static int THREAD_POOL_SIZE = 10;

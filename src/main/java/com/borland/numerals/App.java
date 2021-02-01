@@ -1,15 +1,22 @@
 package com.borland.numerals;
 
+import java.util.EnumSet;
+
+import javax.servlet.DispatcherType;
+
+import com.borland.numerals.metrics.MetricsInstrumentedFilterContextListener;
 import com.borland.numerals.monitoring.HealthCheckContextListener;
 import com.borland.numerals.servlet.NumeralServlet;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jmx.JmxReporter;
+import com.codahale.metrics.servlet.InstrumentedFilter;
 import com.codahale.metrics.servlets.HealthCheckServlet;
 
 import org.apache.log4j.BasicConfigurator;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +32,9 @@ public class App {
 
     // create metrics registry.
     public static final MetricRegistry metrics = new MetricRegistry();
+
+    // metric prefix.
+    public static final String METRIX_PREFIX = "numerals";
 
     // port to start jetty server on.
     public static final int PORT = 8080;
@@ -57,6 +67,11 @@ public class App {
 
             // add our health check context listener to hook in our health checks.
             servletContextHandler.addEventListener(new HealthCheckContextListener());
+
+            // add our metrics intrumented context listener to record request/response metrics.
+            FilterHolder metricsFilterHolder = servletContextHandler.addFilter(InstrumentedFilter.class, NumeralServlet.SERVLET_PATH, EnumSet.of(DispatcherType.REQUEST));
+            metricsFilterHolder.setInitParameter("name-prefix", METRIX_PREFIX);
+            servletContextHandler.addEventListener(new MetricsInstrumentedFilterContextListener());
 
             // set the servlet context hanler on the server.
             server.setHandler(servletContextHandler);
