@@ -199,7 +199,9 @@ Numerals uses an embedded Jetty server to host & deliver servlet functionality. 
 
 **Metrics**
 
-<code>MetricsInstrumetedFilterContextListener</code> registers our <code>MetricsRegistry</code> to an <code>InstrumentedFilter</code> which is registered as a <code>ServletContextList</code> in <code>App</code>. This provides all of the request [metrics](#Metrics) documented below.
+<code>MetricsInstrumetedFilterContextListener</code> provides our <code>MetricsRegistry</code> instance to the <code>InstrumentedFilterContextListener</code> which is registered as a <code>ServletContextListener</code> along with an <code>InstrumentedFilter</code> in <code>App</code> . This filter provides all of the request & response [metrics](#Metrics) documented below.
+
+Additional metrics are captured inline in <code>NumeralServlet</code> & <code>StandardFormNumeralServiceImpl</code>.
 
 **Unit Tests**
 
